@@ -18,6 +18,7 @@ description: Git worktree 생성 및 .kiro 설정 연결. "워크트리 생성",
 2. 메인 worktree 경로 확인 (`git worktree list`에서 첫 번째 항목)
 3. worktree 생성 (메인과 같은 레벨의 sibling 디렉토리)
 4. .kiro 심볼릭 링크 연결
+5. .idea/vcs.xml에 .kiro VCS root 추가
 
 ## 명령어
 
@@ -34,12 +35,16 @@ git worktree add -b {new-branch-name} ../{worktree-name}
 # .kiro 전체를 심볼릭 링크로 연결
 cd ../{worktree-name}
 ln -sf "$MAIN_WORKTREE/.kiro" .kiro
+
+# .idea/vcs.xml에 .kiro VCS root 추가
+sed -i '' 's|<mapping directory="" vcs="Git" />|<mapping directory="" vcs="Git" />\n    <mapping directory="$PROJECT_DIR$/.kiro" vcs="Git" />|' .idea/vcs.xml
 ```
 
 ## .kiro 설정 연결 규칙
 
 - `.kiro` 전체를 메인 worktree의 심볼릭 링크로 연결 (단일 링크)
 - `.kiro/`는 프로젝트 `.gitignore`에 포함되어 있으므로 `skip-worktree` 불필요
+- `.idea/vcs.xml`에 `.kiro` VCS root를 추가하여 IDE에서 변경사항 확인 가능
 
 ## 예시
 
@@ -58,6 +63,8 @@ ln -sf "$MAIN_WORKTREE/.kiro" .kiro
 
 5. cd ../prizm-wt1
    ln -sf "$MAIN_WORKTREE/.kiro" .kiro
+
+6. sed -i '' 's|<mapping directory="" vcs="Git" />|...|' .idea/vcs.xml
 ```
 
 ## 관리 명령어 안내
