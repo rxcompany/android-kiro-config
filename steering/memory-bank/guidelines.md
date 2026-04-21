@@ -403,8 +403,170 @@ LazyColumn {
 }
 ```
 
+### Design System Tokens
+- 색상은 하드코딩(`Color(0xFF...)`)하지 않고 디자인 시스템 토큰을 사용한다.
+- Feature 모듈에서는 `PrizmDesignSystem` 객체를 통해 접근한다.
+- Design 라이브러리 내부 컴포넌트에서는 `Local*` CompositionLocal을 직접 사용한다.
+
+```kotlin
+// ✓ Feature 모듈에서 사용
+@Composable
+fun MyScreen() {
+  Text(
+    text = "Hello",
+    color = PrizmDesignSystem.foundationColor.neutralBlack,
+    style = PrizmDesignSystem.typography.body1,
+  )
+  Box(
+    modifier = Modifier.background(PrizmDesignSystem.colorToken.backgroundSurface)
+  )
+}
+
+// ✓ Design 라이브러리 내부에서 사용
+@Composable
+internal fun DesignComponent() {
+  val color = LocalFoundationColor.current
+  val token = LocalColorToken.current
+  Text(
+    text = "Hello",
+    color = color.neutralBlack,
+  )
+}
+
+// ✗ 하드코딩 금지 (디버그/개발 전용 UI 제외)
+Text(color = Color(0xFF000000))
+Box(modifier = Modifier.background(Color.White))
+```
+
+사용 가능한 토큰:
+- `PrizmDesignSystem.foundationColor` — 기본 색상 (neutralWhite, neutralBlack, neutralGray*, etcRed 등)
+- `PrizmDesignSystem.colorToken` — 시맨틱 토큰 (backgroundSurface, brandTint, statePressed* 등)
+- `PrizmDesignSystem.typography` — 텍스트 스타일
+- `PrizmDesignSystem.shapes` — Shape 토큰
+
+### Composable Function Structure
+- **Screen Composable**: ViewModel을 직접 파라미터로 받아 상태를 수집하고 UI를 렌더링한다.
+- **Component Composable**: 순수 데이터를 파라미터로 받는 Stateless 컴포넌트. ViewModel 의존 없음.
+- Screen에서 Component를 호출할 때 ViewModel 상태를 풀어서 전달한다.
+
+```kotlin
+// Screen: ViewModel을 받아 상태 수집
+@Composable
+fun GoodsListScreen(
+  goodsListViewModel: GoodsListViewModel,
+  navController: NavController,
+) {
+  val feeds by goodsListViewModel.collectAsStateWithLifecycle(GoodsListState::goodsFeedList)
+
+  GoodsGrid(
+    feeds = feeds,
+    onClickItem = { navController.navigate(...) },
+  )
+}
+
+// Component: 순수 데이터만 받음
+@Composable
+fun GoodsGrid(
+  feeds: List<GoodsFeed>,
+  onClickItem: (GoodsFeed) -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  LazyVerticalGrid(modifier = modifier) {
+    items(feeds, key = { it.id }) { feed ->
+      GoodsCard(feed, onClick = { onClickItem(feed) })
+    }
+  }
+}
+```
+
+### ComposeView in ViewBinding Fragments
+- ViewBinding Fragment 안에서 ComposeView를 사용할 때 `ViewCompositionStrategy`를 설정한다.
+- Fragment의 View 라이프사이클에 맞춰 `DisposeOnLifecycleDestroyed(viewLifecycleOwner)`를 사용한다.
+
+```kotlin
+// ✓ ViewBinding Fragment에서 ComposeView 사용
+viewBinding.composeView.setViewCompositionStrategy(
+  ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
+)
+viewBinding.composeView.setContent {
+  PrizmDesignSystem {
+    MyComposable()
+  }
+}
+```
+
+### Mavericks + Compose State Collection
+- Mavericks ViewModel 상태 수집: `com.airbnb.mvrx.compose.collectAsStateWithLifecycle`
+- 일반 Flow 수집: `androidx.lifecycle.compose.collectAsStateWithLifecycle`
+- 두 import가 공존할 수 있으므로 혼동 주의
+
+```kotlin
+// Mavericks ViewModel 상태 수집 (State의 특정 프로퍼티)
+import com.airbnb.mvrx.compose.collectAsStateWithLifecycle
+
+val feeds by viewModel.collectAsStateWithLifecycle(GoodsListState::goodsFeedList)
+val live by liveViewModel.collectAsStateWithLifecycle(LiveState::live)
+
+// 일반 StateFlow 수집
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+val debugInfo by debugCollector.stateFlow.collectAsStateWithLifecycle()
+```
+
+### Side Effects
+- `LaunchedEffect(Unit)` — Composition 진입 시 1회 실행 (일회성 초기화, impression 로깅)
+- `LaunchedEffect(key)` — key 변경 시마다 재실행 (상태 변화에 반응)
+- `DisposableEffect` — 정리(cleanup)가 필요한 리소스 (lifecycle observer 등록/해제)
+- `snapshotFlow { }` — Compose 상태를 Flow로 변환하여 `LaunchedEffect` 내에서 collect
+
+```kotlin
+// 일회성 실행
+LaunchedEffect(Unit) {
+  viewModel.fetchInitialData()
+}
+
+// 상태 변화에 반응
+LaunchedEffect(selectedTab) {
+  viewModel.loadTab(selectedTab)
+}
+
+// 정리가 필요한 리소스
+DisposableEffect(lifecycleOwner) {
+  val observer = LifecycleEventObserver { _, event -> ... }
+  lifecycleOwner.lifecycle.addObserver(observer)
+  onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+}
+
+// Compose 상태 → Flow 변환
+LaunchedEffect(pagerState) {
+  snapshotFlow { pagerState.currentPage }
+    .collect { page -> viewModel.onPageChanged(page) }
+}
+```
+
 ### Compose Preview
-- When `Image` domain model is needed in `@Preview` composables, use `PreviewImage` from `com.rxc.prizm.library.design.compose.common.Common.kt` instead of creating `Image` instances directly
+- Preview 함수 네이밍: `Preview` + 컴포넌트명 + 상태 (e.g., `PreviewBubbleItemLight`, `PreviewBubbleItemDark`)
+- 반드시 `PrizmDesignSystem { }` 으로 감싼다.
+- 다크모드 Preview: `@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)` 추가
+- `Image` 도메인 모델이 필요하면 `PreviewImage` 사용 (`com.rxc.prizm.library.design.compose.common.Common.kt`)
+
+```kotlin
+@Preview
+@Composable
+fun PreviewMyComponentLight() {
+  PrizmDesignSystem {
+    MyComponent(title = "Sample", isActive = true)
+  }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun PreviewMyComponentDark() {
+  PrizmDesignSystem {
+    MyComponent(title = "Sample", isActive = true)
+  }
+}
+```
 
 ### Custom Views
 - Extend appropriate base class (ConstraintLayout, etc.)

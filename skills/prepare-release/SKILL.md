@@ -1,6 +1,6 @@
 ---
 name: prepare-release
-description: "릴리즈 준비", "릴리즈 브랜치 생성", "release 브랜치" 요청 시 사용.
+description: 릴리즈 준비. "릴리즈 준비", "버전 올려", "release 브랜치" 요청 시 사용.
 ---
 
 # Release 준비

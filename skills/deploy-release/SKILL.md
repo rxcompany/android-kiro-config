@@ -1,6 +1,6 @@
 ---
 name: deploy-release
-description: "릴리즈 배포", "배포 브랜치 생성", "versionCode 업데이트 커밋, PR 생성까지 수행", "버전 업데이트 PR", "배포 브랜치", "릴리즈 배포" 요청 시 사용.
+description: 릴리즈 배포. 배포 브랜치 생성, versionCode 업데이트 커밋, PR 생성까지 수행. "배포", "배포 브랜치", "릴리즈 배포" 요청 시 사용.
 ---
 
 # Deployment Branch 생성
@@ -20,11 +20,6 @@ release 브랜치로부터 배포용 feature 브랜치를 생성하고, versionN
 4. 브랜치 생성: `feature/{ISSUE-KEY}-dist-{versionCode+1}`
 5. `common-config.gradle`에서 versionCode +1, versionName을 release 브랜치 버전으로 업데이트
 6. 변경사항 커밋 및 푸시
-7. "PR도 생성할까요?" 질문 → 승인 시 아래 설정으로 Draft PR 생성
-   - **Base**: release 브랜치
-   - **Assignee**: GitHub API로 현재 사용자 조회
-   - **Milestone**: release 브랜치 버전과 동일한 이름의 마일스톤 자동 매칭 (예: release/1.75.0 → 마일스톤 `1.75.0`)
-   - **Label**: `build/configuration`
 
 ## 버전 파일
 
@@ -60,19 +55,6 @@ git commit -m "[{ISSUE-KEY}] v{versionName}({newVersionCode}) 배포"
 
 # 푸시
 git push -u origin feature/{ISSUE-KEY}-dist-{newVersionCode}
-
-# 마일스톤 번호 조회 (버전명으로 매칭)
-gh api repos/:owner/:repo/milestones --jq '.[] | select(.title == "{versionName}") | .number'
-
-# PR 생성
-gh pr create \
-  --title "[{ISSUE-KEY}] v{versionName}({newVersionCode}) 배포" \
-  --body "## 배경\n- {ISSUE-KEY}" \
-  --base release/{versionName} \
-  --assignee "$(gh api user --jq '.login')" \
-  --milestone "{versionName}" \
-  --label "build/configuration" \
-  --draft
 ```
 
 ## 예시
@@ -92,17 +74,6 @@ gh pr create \
 5. common-config.gradle 수정: versionCode=291, versionName="1.75.0"
 6. git commit -m "[MO-5113] v1.75.0(291) 배포"
 7. git push -u origin feature/MO-5113-dist-291
-
-8. 질문: "PR도 생성할까요?"
-   → 승인 시:
-   gh pr create \
-     --title "[MO-5113] v1.75.0(291) 배포" \
-     --body "## 배경\n- MO-5113" \
-     --base release/1.75.0 \
-     --assignee "$(gh api user --jq '.login')" \
-     --milestone "1.75.0" \
-     --label "build/configuration" \
-     --draft
 ```
 
 ## 커밋 메시지 형식

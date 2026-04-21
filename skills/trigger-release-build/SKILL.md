@@ -1,6 +1,6 @@
 ---
 name: trigger-release-build
-description: "Bitrise 릴리즈 빌드 트리거", "빌드 시작", "빌드 돌려", "배포 빌드", "원격 빌드", "릴리즈 빌드" 요청 시 사용.
+description: Bitrise 릴리즈 빌드 트리거. "빌드 시작", "빌드 돌려", "배포 빌드", "원격 빌드", "릴리즈 빌드" 요청 시 사용.
 ---
 
 # Bitrise 빌드 트리거
