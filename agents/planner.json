@@ -1,0 +1,40 @@
+{
+  "name": "planner",
+  "description": "티켓 분석 + 실행/구현 계획 수립 에이전트",
+  "includeMcpJson": true,
+  "prompt": "file://prompts/planner.md",
+  "tools": ["fs_read", "fs_write", "grep", "glob", "code", "web_fetch", "execute_bash", "@figma-desktop", "@slack/channels_list", "@slack/conversations_history", "@slack/conversations_replies", "@slack/conversations_search_messages", "@slack/users_search"],
+  "allowedTools": [
+    "fs_read",
+    "fs_write",
+    "grep",
+    "glob",
+    "code",
+    "web_fetch",
+    "execute_bash",
+    "@figma-desktop",
+    "@slack/channels_list",
+    "@slack/conversations_history",
+    "@slack/conversations_replies",
+    "@slack/conversations_search_messages",
+    "@slack/users_search"
+  ],
+  "toolsSettings": {
+    "fs_read": {
+      "allowedPaths": ["/Users/develog/StudioProjects/**"]
+    },
+    "fs_write": {
+      "allowedPaths": ["/Users/develog/StudioProjects/**/my/plan/**"]
+    }
+  },
+  "resources": [
+    "file://.kiro/steering/memory-bank/*.md",
+    "file://.kiro/steering/dependency-management.md",
+    "file://.kiro/steering/my/mcp.md",
+    "file://~/.kiro/steering/*.md",
+    "skill://.kiro/skills/**/SKILL.md"
+  ],
+  "keyboardShortcut": "ctrl+shift+p",
+  "welcomeMessage": "플래닝 에이전트입니다. 분석할 티켓이나 작업을 알려주세요.",
+  "model": "claude-opus-4.6"
+}

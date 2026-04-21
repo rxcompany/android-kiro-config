@@ -1,0 +1,21 @@
+{
+  "name": "reviewer",
+  "description": "코드 리뷰 에이전트 (읽기 전용)",
+  "prompt": "file://prompts/reviewer.md",
+  "tools": ["fs_read", "grep", "glob", "code"],
+  "allowedTools": ["fs_read", "grep", "glob", "code"],
+  "toolsSettings": {
+    "fs_read": {
+      "allowedPaths": ["/Users/develog/StudioProjects/**"]
+    }
+  },
+  "resources": [
+    "file://.kiro/steering/memory-bank/*.md",
+    "file://.kiro/steering/dependency-management.md",
+    "file://.amazonq/rules/commit.md",
+    "file://~/.kiro/steering/*.md"
+  ],
+  "keyboardShortcut": "ctrl+shift+r",
+  "welcomeMessage": "코드 리뷰 에이전트입니다. 어떤 코드를 리뷰할까요?",
+  "model": "claude-opus-4.6"
+}
