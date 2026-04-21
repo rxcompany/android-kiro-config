@@ -38,6 +38,20 @@ git clone https://github.com/rxcompany/android-kiro-config.git .kiro
 | `steering/private/` | 개인 steering rules |
 | `private/` | 최상위 개인 전용 공간 |
 
+## IDE VCS 설정
+
+Android Studio에서 `.kiro/` 내부 변경사항을 Git 탭에서 확인하려면 VCS root를 추가하세요.
+
+`.idea/vcs.xml`:
+```xml
+<component name="VcsDirectoryMappings">
+  <mapping directory="" vcs="Git" />
+  <mapping directory="$PROJECT_DIR$/.kiro" vcs="Git" />
+</component>
+```
+
+이렇게 하면 프로젝트 repo와 `.kiro` repo의 변경사항이 Git 탭에서 각각 분리되어 표시되고, 커밋도 각 repo에 개별적으로 할 수 있습니다.
+
 ## Git credential 설정
 
 HTTPS로 push하려면 gh CLI credential helper 설정이 필요합니다:
