@@ -45,6 +45,14 @@ curl -s -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
   "$JIRA_URL/rest/api/3/issue/PQ-XXXX?fields=summary,parent,customfield_10014"
 ```
 
+### 현재 활성 스프린트 조회
+MO 보드 ID는 **1** (scrum). 반드시 이 ID를 사용한다. (V1 Kanban=15는 사용하지 않음)
+```bash
+curl -s -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
+  "$JIRA_URL/rest/agile/1.0/board/1/sprint?state=active"
+```
+응답의 `values[0].id`를 스프린트 ID로 사용한다. 응답이 비어있으면 사용자에게 확인을 요청한다.
+
 ### 버그 티켓 생성
 ```bash
 curl -s -X POST -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
@@ -57,7 +65,7 @@ curl -s -X POST -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
       "issuetype": {"id": "10004"},
       "assignee": {"accountId": "<myself_accountId>"},
       "labels": ["AOS"],
-      "customfield_10020": <sprintId>,
+      "customfield_10020": <sprintId (숫자)>,
       "parent": {"key": "MO-XXXX"}
     }
   }'
