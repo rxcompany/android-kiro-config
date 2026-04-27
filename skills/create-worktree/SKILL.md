@@ -34,6 +34,7 @@ git worktree add -b {new-branch-name} ../{worktree-name}
 
 # .kiro 전체를 심볼릭 링크로 연결
 cd ../{worktree-name}
+rm -rf .kiro
 ln -sf "$MAIN_WORKTREE/.kiro" .kiro
 
 # .idea/vcs.xml에 .kiro VCS root 추가
@@ -62,6 +63,7 @@ sed -i '' 's|<mapping directory="" vcs="Git" />|<mapping directory="" vcs="Git" 
 4. git worktree add ../prizm-wt1 feature/MO-5001-new-feature
 
 5. cd ../prizm-wt1
+   rm -rf .kiro
    ln -sf "$MAIN_WORKTREE/.kiro" .kiro
 
 6. sed -i '' 's|<mapping directory="" vcs="Git" />|...|' .idea/vcs.xml

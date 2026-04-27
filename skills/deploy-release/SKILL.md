@@ -16,8 +16,9 @@ release 브랜치로부터 배포용 feature 브랜치를 생성하고, versionN
 
 1. 사용자에게 release 브랜치 확인
 2. 사용자에게 JIRA 이슈 번호 확인
-3. `common-config.gradle`에서 현재 versionCode 조회
-4. 브랜치 생성: `feature/{ISSUE-KEY}-dist-{versionCode+1}`
+3. release 브랜치로 체크아웃 및 최신화 (`git checkout release/{versionName} && git pull`)
+4. `common-config.gradle`에서 현재 versionCode 조회
+5. 브랜치 생성: `feature/{ISSUE-KEY}-dist-{versionCode+1}`
 5. `common-config.gradle`에서 versionCode +1, versionName을 release 브랜치 버전으로 업데이트
 6. 변경사항 커밋 및 푸시
 7. "PR도 생성할까요?" 질문 → 승인 시 아래 설정으로 Draft PR 생성
@@ -48,6 +49,9 @@ ext.versions = [
 ## 명령어
 
 ```bash
+# release 브랜치 체크아웃 및 최신화
+git checkout release/{versionName} && git pull
+
 # versionCode 조회
 grep -E "versionCode|versionName" common-config.gradle
 
@@ -86,14 +90,16 @@ gh pr create \
 2. 질문: "어떤 JIRA 이슈 번호를 사용하시겠습니까?"
    → 응답: "MO-5113"
 
-3. versionCode 조회 (예: 290)
+3. git checkout release/1.75.0 && git pull
 
-4. git checkout -b feature/MO-5113-dist-291 release/1.75.0
-5. common-config.gradle 수정: versionCode=291, versionName="1.75.0"
-6. git commit -m "[MO-5113] v1.75.0(291) 배포"
-7. git push -u origin feature/MO-5113-dist-291
+4. versionCode 조회 (예: 290)
 
-8. 질문: "PR도 생성할까요?"
+5. git checkout -b feature/MO-5113-dist-291 release/1.75.0
+6. common-config.gradle 수정: versionCode=291, versionName="1.75.0"
+7. git commit -m "[MO-5113] v1.75.0(291) 배포"
+8. git push -u origin feature/MO-5113-dist-291
+
+9. 질문: "PR도 생성할까요?"
    → 승인 시:
    gh pr create \
      --title "[MO-5113] v1.75.0(291) 배포" \
