@@ -51,7 +51,7 @@ gh pr create \
 
 ## PR 제목
 
-- JIRA 이슈 summary 그대로 사용
+- JIRA 이슈 summary에서 `[AOS]` 접두사를 제거하고 사용
 - 형식: `[ISSUE-KEY] <JIRA summary>`
 
 ## PR 본문 형식
