@@ -13,9 +13,15 @@ JIRA 이슈 기반으로 feature 브랜치를 생성하고 JIRA 상태를 변경
 
 ## 워크플로우
 
-1. **JIRA 이슈 조회**: JIRA REST API(`curl`)로 이슈 정보 가져오기
-2. **브랜치 생성**: `git checkout -b` (현재 브랜치 기준, 로컬만 생성, 원격 푸시하지 않음)
-3. **JIRA 상태 변경**: JIRA REST API(`curl`)로 "진행 중" 상태로 변경
+1. **JIRA 이슈 조회**: JIRA REST API(`curl`)로 이슈 정보 가져오기 (상위 에픽 포함)
+2. **베이스 브랜치 확인**: 사용자에게 베이스 브랜치를 질문 (기본값 표시)
+3. **브랜치 생성**: 베이스 브랜치에서 `git checkout -b` (로컬만 생성, 원격 푸시하지 않음)
+4. **JIRA 상태 변경**: JIRA REST API(`curl`)로 "진행 중" 상태로 변경
+
+## 베이스 브랜치 기본값
+
+- 상위 에픽의 summary에 "서스테이닝"이 포함된 경우 → `develop`
+- 그 외 → `project/{EPIC-KEY}-*` 패턴으로 원격 브랜치 검색 (`git branch -r --list "origin/project/{EPIC-KEY}*"`)하여 매칭되는 브랜치 사용
 
 ## JIRA 전환 ID
 
@@ -37,8 +43,8 @@ JIRA 이슈 기반으로 feature 브랜치를 생성하고 JIRA 상태를 변경
 ## 명령어
 
 ```bash
-# 브랜치 생성 (로컬만)
-git checkout -b feature/MO-XXXX-description
+# 베이스 브랜치에서 feature 브랜치 생성 (로컬만)
+git checkout -b feature/MO-XXXX-description <base-branch>
 ```
 
 ## 예시
@@ -46,12 +52,18 @@ git checkout -b feature/MO-XXXX-description
 ```
 입력: "MO-5047 브랜치 생성해"
 
-1. curl -s -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_URL/rest/api/3/issue/MO-5047"
+1. curl -s -u "$JIRA_EMAIL:$JIRA_API_TOKEN" "$JIRA_URL/rest/api/3/issue/MO-5047?fields=summary,parent"
    → summary: "[AOS] 다중 아이템 스냅 캐러셀 구현"
+   → parent.key: "MO-5000", parent.fields.summary: "[AOS] 홈 개편"
 
-2. git checkout -b feature/MO-5047-multi-item-snap-carousel
+2. git branch -r --list "origin/project/MO-5000*"
+   → origin/project/MO-5000-home-renewal
 
-3. curl -s -X POST -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Content-Type: application/json" \
+3. 사용자에게 베이스 브랜치 확인: "베이스 브랜치: `project/MO-5000-home-renewal` (엔터로 기본값 사용)"
+
+4. git checkout -b feature/MO-5047-multi-item-snap-carousel origin/project/MO-5000-home-renewal
+
+5. curl -s -X POST -u "$JIRA_EMAIL:$JIRA_API_TOKEN" -H "Content-Type: application/json" \
      "$JIRA_URL/rest/api/3/issue/MO-5047/transitions" -d '{"transition":{"id":"21"}}'
 ```
 
